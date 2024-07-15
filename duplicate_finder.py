@@ -1,7 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
-
+import subprocess
 
 class DuplicateFinder:
     def __init__(self, root):
@@ -17,10 +17,31 @@ class DuplicateFinder:
         self.start_button = tk.Button(self.frame, text="Start Search", command=self.start_search)
         self.start_button.pack(side=tk.LEFT, padx=10)
 
-        self.text_area = tk.Text(self.root, height=20, width=80)
-        self.text_area.pack(pady=10)
+        self.delete_button = tk.Button(self.frame, text="Delete Selected", command=self.delete_selected)
+        self.delete_button.pack(side=tk.LEFT, padx=10)
+
+        self.open_button = tk.Button(self.frame, text="Open Directory of Selected", command=self.open_selected)
+        self.open_button.pack(side=tk.LEFT, padx=10)
+
+        self.label = tk.Label(self.root, text="Open Directory => Start Search => Open Directory of Selected OR Delete Selected")
+        self.label.pack(pady=10)
+
+        self.text_area_frame = tk.Frame(self.root)
+        self.text_area_frame.pack(pady=10)
+
+        self.text_area_scroll = tk.Scrollbar(self.text_area_frame, orient=tk.VERTICAL)
+        self.text_area_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.listbox = tk.Listbox(self.text_area_frame, selectmode=tk.EXTENDED, yscrollcommand=self.text_area_scroll.set, height=20, width=80)
+        self.listbox.pack()
+
+        self.text_area_scroll.config(command=self.listbox.yview)
+
+        self.label = tk.Label(self.root, text="Author: MW")
+        self.label.pack(pady=10)
 
         self.directory = ""
+        self.duplicates = {}
 
     def open_directory(self):
         self.directory = filedialog.askdirectory()
@@ -32,14 +53,14 @@ class DuplicateFinder:
             messagebox.showwarning("No Directory", "Please select a directory first.")
             return
 
-        duplicates = self.find_duplicates(self.directory)
-        if duplicates:
-            self.text_area.delete(1.0, tk.END)
-            self.text_area.insert(tk.END, "Duplicate Files:\n")
-            for name, paths in duplicates.items():
-                self.text_area.insert(tk.END, f"\n{name}:\n")
+        self.duplicates = self.find_duplicates(self.directory)
+        if self.duplicates:
+            self.listbox.delete(0, tk.END)
+            self.listbox.insert(tk.END, "Duplicate Files:\n")
+            for name, paths in self.duplicates.items():
+                self.listbox.insert(tk.END, f"\n{name}:\n")
                 for path in paths:
-                    self.text_area.insert(tk.END, f"{path}\n")
+                    self.listbox.insert(tk.END, f"{path}")
         else:
             messagebox.showinfo("No Duplicates", "No duplicate files found.")
 
@@ -54,6 +75,44 @@ class DuplicateFinder:
 
         duplicates = {name: paths for name, paths in file_map.items() if len(paths) > 1}
         return duplicates
+
+    def delete_selected(self):
+        selected_indices = self.listbox.curselection()
+        selected_files = [self.listbox.get(i) for i in selected_indices if not self.listbox.get(i).startswith("\n") and not self.listbox.get(i).startswith("Duplicate Files:")]
+
+        if not selected_files:
+            messagebox.showwarning("No Selection", "Please select the file path to delete.")
+            return
+
+        if messagebox.askyesno("Delete Confirmation", f"Are you sure you want to delete the selected files?"):
+            for file_path in selected_files:
+                try:
+                    os.remove(file_path)
+                    messagebox.showinfo("Deleted", f"File deleted: {file_path}")
+                except Exception as e:
+                    messagebox.showerror("Error", f"Failed to delete file: {e}")
+
+            self.start_search()
+
+    def open_selected(self):
+        selected_indices = self.listbox.curselection()
+        selected_files = [self.listbox.get(i) for i in selected_indices if not self.listbox.get(i).startswith("\n") and not self.listbox.get(i).startswith("Duplicate Files:")]
+
+        if not selected_files:
+            messagebox.showwarning("No Selection", "Please select the file path to open.")
+            return
+
+        for file_path in selected_files:
+            try:
+                directory = os.path.dirname(file_path)
+                if os.name == 'nt':
+                    os.startfile(directory)
+                elif os.name == 'posix':
+                    subprocess.call(('open', directory))
+                else:
+                    subprocess.call(('xdg-open', directory))
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to open directory: {e}")
 
 
 if __name__ == "__main__":
