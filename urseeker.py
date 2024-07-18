@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox
 import subprocess
 
 ascii_art = """
@@ -14,7 +14,7 @@ ascii_art = """
 | |   | || (\ (         ) || (      | (      |  ( \ \ | (      | (\ (   
 | (___) || ) \ \__/\____) || (____/\| (____/\|  /  \ \| (____/\| ) \ \__
 (_______)|/   \__/\_______)(_______/(_______/|_/    \/(_______/|/   \__/
-                                                                        
+
 
 
 """
@@ -26,28 +26,37 @@ class Application(tk.Tk):
         self.long_path_finder = None
         self.duplicate_finder = None
         self.title("UrSeeker")
-        self.geometry("800x600")
+        self.geometry("1024x768")
+        self.icon_path = os.path.join(os.path.dirname(__file__), "favicon.ico")
+        self.iconbitmap(self.icon_path)
+        self.init_styles()
         self.init_welcome_screen()
+
+    def init_styles(self):
+        style = ttk.Style()
+        style.configure("TButton", font=("Helvetica", 12), padding=10)
+        style.configure("TLabel", font=("Helvetica", 14))
+        style.configure("Header.TLabel", font=("Helvetica", 16, "bold"))
 
     def init_welcome_screen(self):
         self.clear_screen()
 
-        welcome_label = tk.Label(self, text=ascii_art, font=("Courier", 10))
+        welcome_label = ttk.Label(self, text=ascii_art, font=("Courier", 10), justify=tk.LEFT)
         welcome_label.pack(pady=20)
 
-        desc_label = tk.Label(self, text="Wybierz jedną z poniższych funkcji:", font=("Helvetica", 12))
+        desc_label = ttk.Label(self, text="Wybierz jedną z poniższych funkcji:", style="Header.TLabel")
         desc_label.pack(pady=10)
 
-        find_duplicates_button = tk.Button(self, text="Znajdź duplikaty w katalogu",
-                                           command=self.init_find_duplicates_screen)
+        find_duplicates_button = ttk.Button(self, text="Znajdź duplikaty w katalogu",
+                                            command=self.init_find_duplicates_screen)
         find_duplicates_button.pack(pady=10)
 
-        find_long_paths_button = tk.Button(self, text="Znajdź zbyt długie ścieżki plików/katalogów",
-                                           command=self.init_find_long_paths_screen)
+        find_long_paths_button = ttk.Button(self, text="Znajdź zbyt długie ścieżki plików/katalogów",
+                                            command=self.init_find_long_paths_screen)
         find_long_paths_button.pack(pady=10)
 
-        low_label = tk.Label(self, text="Wszelkie uwagi proszę zgłaszać do: Michał", font=("Helvetica", 12))
-        low_label.pack(pady=10)
+        low_label = ttk.Label(self, text="Wszelkie uwagi proszę zgłaszać do: Michał", font=("Helvetica", 12))
+        low_label.pack(pady=20)
 
     def clear_screen(self):
         for widget in self.winfo_children():
@@ -81,42 +90,34 @@ class DuplicateFinder(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
 
-        self.frame = tk.Frame(self)
+        self.frame = ttk.Frame(self)
         self.frame.pack(pady=20)
 
-        self.open_button = tk.Button(self.frame, text="Otwórz katalog", command=self.open_directory)
+        self.open_button = ttk.Button(self.frame, text="Otwórz katalog", command=self.open_directory)
         self.open_button.pack(side=tk.LEFT, padx=10)
 
-        self.start_button = tk.Button(self.frame, text="Rozpocznij wyszukiwanie", command=self.start_search)
+        self.start_button = ttk.Button(self.frame, text="Rozpocznij wyszukiwanie", command=self.start_search)
         self.start_button.pack(side=tk.LEFT, padx=10)
 
-        self.delete_button = tk.Button(self.frame, text="Usuń zaznaczone", command=self.delete_selected)
+        self.delete_button = ttk.Button(self.frame, text="Usuń zaznaczone", command=self.delete_selected)
         self.delete_button.pack(side=tk.LEFT, padx=10)
 
-        self.open_selected_button = tk.Button(self.frame, text="Otwórz katalog zaznaczonych",
-                                              command=self.open_selected)
+        self.open_selected_button = ttk.Button(self.frame, text="Otwórz katalog zaznaczonych", command=self.open_selected)
         self.open_selected_button.pack(side=tk.LEFT, padx=10)
 
-        self.back_button = tk.Button(self.frame, text="Wstecz", command=master.init_welcome_screen)
+        self.back_button = ttk.Button(self.frame, text="Wstecz", command=master.init_welcome_screen)
         self.back_button.pack(side=tk.LEFT, padx=10)
 
-        self.label = tk.Label(self, text="Otwórz katalog => Rozpocznij wyszukiwanie => Otwórz katalog zaznaczonych "
-                                         "LUB Usuń zaznaczone")
-        self.label.pack(pady=10)
-
-        self.lower_label = tk.Label(self,
-                                    text="Wyszukiwanie odbywa się po NAZWIE pliku, także radziłbym się upewnić przed "
-                                         "usunięciem (:")
+        self.lower_label = ttk.Label(self, text="Wyszukiwanie odbywa się po NAZWIE pliku, także radziłbym się upewnić przed usunięciem (: ", wraplength=1000, justify=tk.LEFT)
         self.lower_label.pack(pady=10)
 
-        self.text_area_frame = tk.Frame(self)
+        self.text_area_frame = ttk.Frame(self)
         self.text_area_frame.pack(pady=10)
 
-        self.text_area_scroll = tk.Scrollbar(self.text_area_frame, orient=tk.VERTICAL)
+        self.text_area_scroll = ttk.Scrollbar(self.text_area_frame, orient=tk.VERTICAL)
         self.text_area_scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.listbox = tk.Listbox(self.text_area_frame, selectmode=tk.EXTENDED,
-                                  yscrollcommand=self.text_area_scroll.set, height=20, width=80)
+        self.listbox = tk.Listbox(self.text_area_frame, selectmode=tk.EXTENDED, yscrollcommand=self.text_area_scroll.set, height=40, width=120, font=("Courier", 10))
         self.listbox.pack()
 
         self.text_area_scroll.config(command=self.listbox.yview)
@@ -193,37 +194,34 @@ class LongPathFinder(tk.Frame):
         super().__init__(master)
 
         self.path_map = None
-        self.frame = tk.Frame(self)
+        self.frame = ttk.Frame(self)
         self.frame.pack(pady=20)
 
-        self.open_button = tk.Button(self.frame, text="Otwórz katalog", command=self.open_directory)
+        self.open_button = ttk.Button(self.frame, text="Otwórz katalog", command=self.open_directory)
         self.open_button.pack(side=tk.LEFT, padx=10)
 
-        self.start_button = tk.Button(self.frame, text="Szukaj długich ścieżek", command=self.search_long_paths)
+        self.start_button = ttk.Button(self.frame, text="Szukaj długich ścieżek", command=self.search_long_paths)
         self.start_button.pack(side=tk.LEFT, padx=10)
 
-        self.open_selected_button = tk.Button(self.frame, text="Otwórz ścieżkę", command=self.open_end_of_path)
+        self.open_selected_button = ttk.Button(self.frame, text="Otwórz ścieżkę", command=self.open_end_of_path)
         self.open_selected_button.pack(side=tk.LEFT, padx=10)
 
-        self.back_button = tk.Button(self.frame, text="Wstecz", command=master.init_welcome_screen)
+        self.back_button = ttk.Button(self.frame, text="Wstecz", command=master.init_welcome_screen)
         self.back_button.pack(side=tk.LEFT, padx=10)
 
-        self.label = tk.Label(self, text="Otwórz katalog => Szukaj długich ścieżek (>260) => Otwórz koniec ścieżki")
-        self.label.pack(pady=10)
-
-        self.lower_label = tk.Label(self,
-                                    text="Jeżeli ścieżka jest za długa - trzeba będzie się wklikać dalej już z "
-                                         "poziomu Eksploratora (:")
+        self.lower_label = ttk.Label(self,
+                                    text="Jeżeli ścieżka jest za długa (>260) - trzeba będzie się wklikać dalej już z "
+                                         "poziomu Eksploratora (:", wraplength=1000, justify=tk.LEFT)
         self.lower_label.pack(pady=10)
 
-        self.text_area_frame = tk.Frame(self)
+        self.text_area_frame = ttk.Frame(self)
         self.text_area_frame.pack(pady=10)
 
-        self.text_area_scroll = tk.Scrollbar(self.text_area_frame, orient=tk.VERTICAL)
+        self.text_area_scroll = ttk.Scrollbar(self.text_area_frame, orient=tk.VERTICAL)
         self.text_area_scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
         self.listbox = tk.Listbox(self.text_area_frame, selectmode=tk.EXTENDED,
-                                  yscrollcommand=self.text_area_scroll.set, height=20, width=80)
+                                  yscrollcommand=self.text_area_scroll.set, height=40, width=120, font=("Courier", 10))
         self.listbox.pack()
 
         self.text_area_scroll.config(command=self.listbox.yview)
