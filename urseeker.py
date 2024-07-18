@@ -4,8 +4,6 @@ from tkinter import ttk, filedialog, messagebox
 import subprocess
 
 ascii_art = """
-
-
           _______  _______  _______  _______  _        _______  _______ 
 |\     /|(  ____ )(  ____ \(  ____ \(  ____ \| \    /\(  ____ \(  ____ )
 | )   ( || (    )|| (    \/| (    \/| (    \/|  \  / /| (    \/| (    )|
@@ -14,7 +12,6 @@ ascii_art = """
 | |   | || (\ (         ) || (      | (      |  ( \ \ | (      | (\ (   
 | (___) || ) \ \__/\____) || (____/\| (____/\|  /  \ \| (____/\| ) \ \__
 (_______)|/   \__/\_______)(_______/(_______/|_/    \/(_______/|/   \__/
-
 
 
 """
@@ -32,7 +29,8 @@ class Application(tk.Tk):
         self.init_styles()
         self.init_welcome_screen()
 
-    def init_styles(self):
+    @staticmethod
+    def init_styles():
         style = ttk.Style()
         style.configure("TButton", font=("Helvetica", 12), padding=10)
         style.configure("TLabel", font=("Helvetica", 14))
@@ -102,13 +100,16 @@ class DuplicateFinder(tk.Frame):
         self.delete_button = ttk.Button(self.frame, text="Usuń zaznaczone", command=self.delete_selected)
         self.delete_button.pack(side=tk.LEFT, padx=10)
 
-        self.open_selected_button = ttk.Button(self.frame, text="Otwórz katalog zaznaczonych", command=self.open_selected)
+        self.open_selected_button = ttk.Button(self.frame, text="Otwórz katalog zaznaczonych",
+                                               command=self.open_selected)
         self.open_selected_button.pack(side=tk.LEFT, padx=10)
 
         self.back_button = ttk.Button(self.frame, text="Wstecz", command=master.init_welcome_screen)
         self.back_button.pack(side=tk.LEFT, padx=10)
 
-        self.lower_label = ttk.Label(self, text="Wyszukiwanie odbywa się po NAZWIE pliku, także radziłbym się upewnić przed usunięciem (: ", wraplength=1000, justify=tk.LEFT)
+        self.lower_label = ttk.Label(self,
+                                     text="Wyszukiwanie odbywa się po NAZWIE pliku, także radziłbym się upewnić "
+                                          "przed usunięciem (: ", wraplength=1000, justify=tk.LEFT)
         self.lower_label.pack(pady=10)
 
         self.text_area_frame = ttk.Frame(self)
@@ -117,7 +118,8 @@ class DuplicateFinder(tk.Frame):
         self.text_area_scroll = ttk.Scrollbar(self.text_area_frame, orient=tk.VERTICAL)
         self.text_area_scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.listbox = tk.Listbox(self.text_area_frame, selectmode=tk.EXTENDED, yscrollcommand=self.text_area_scroll.set, height=40, width=120, font=("Courier", 10))
+        self.listbox = tk.Listbox(self.text_area_frame, selectmode=tk.EXTENDED,
+                                  yscrollcommand=self.text_area_scroll.set, height=40, width=120, font=("Courier", 10))
         self.listbox.pack()
 
         self.text_area_scroll.config(command=self.listbox.yview)
@@ -156,7 +158,7 @@ class DuplicateFinder(tk.Frame):
             messagebox.showwarning("Brak zaznaczenia", "Proszę zaznaczyć pliki do usunięcia.")
             return
 
-        if messagebox.askyesno("Potwierdzenie usunięcia", f"Czy na pewno chcesz usunąć zaznaczone pliki?"):
+        if messagebox.askyesno("Potwierdzenie usunięcia", "Czy na pewno chcesz usunąć zaznaczone pliki?"):
             for file_path in selected_files:
                 try:
                     os.remove(file_path)
@@ -210,8 +212,8 @@ class LongPathFinder(tk.Frame):
         self.back_button.pack(side=tk.LEFT, padx=10)
 
         self.lower_label = ttk.Label(self,
-                                    text="Jeżeli ścieżka jest za długa (>260) - trzeba będzie się wklikać dalej już z "
-                                         "poziomu Eksploratora (:", wraplength=1000, justify=tk.LEFT)
+                                     text="Jeżeli ścieżka jest za długa (>260) - trzeba będzie się wklikać dalej już "
+                                          "z poziomu Eksploratora (:", wraplength=1000, justify=tk.LEFT)
         self.lower_label.pack(pady=10)
 
         self.text_area_frame = ttk.Frame(self)
