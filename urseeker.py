@@ -1,18 +1,18 @@
 import os
+import secrets
+import string
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import subprocess
 
 ascii_art = """
-          _______  _______  _______  _______  _        _______  _______ 
-|\     /|(  ____ )(  ____ \(  ____ \(  ____ \| \    /\(  ____ \(  ____ )
-| )   ( || (    )|| (    \/| (    \/| (    \/|  \  / /| (    \/| (    )|
-| |   | || (____)|| (_____ | (__    | (__    |  (_/ / | (__    | (____)|
-| |   | ||     __)(_____  )|  __)   |  __)   |   _ (  |  __)   |     __)
-| |   | || (\ (         ) || (      | (      |  ( \ \ | (      | (\ (   
-| (___) || ) \ \__/\____) || (____/\| (____/\|  /  \ \| (____/\| ) \ \__
-(_______)|/   \__/\_______)(_______/(_______/|_/    \/(_______/|/   \__/
 
+  _    _      __  __ _       _             
+ | |  | |    |  \/  (_)     (_)            
+ | |  | |_ __| \  / |_ _ __  _  ___  _ __  
+ | |  | | '__| |\/| | | '_ \| |/ _ \| '_ \ 
+ | |__| | |  | |  | | | | | | | (_) | | | |
+  \____/|_|  |_|  |_|_|_| |_|_|\___/|_| |_|
 
 """
 
@@ -22,7 +22,8 @@ class Application(tk.Tk):
         super().__init__()
         self.long_path_finder = None
         self.duplicate_finder = None
-        self.title("UrSeeker")
+        self.secret_key_generator = None
+        self.title("UrMinion")
         self.geometry("1024x768")
         self.icon_path = os.path.join(os.path.dirname(__file__), "favicon.ico")
         self.iconbitmap(self.icon_path)
@@ -53,6 +54,10 @@ class Application(tk.Tk):
                                             command=self.init_find_long_paths_screen)
         find_long_paths_button.pack(pady=10)
 
+        generate_secret_key_button = ttk.Button(self, text="Wygeneruj hasło/secret key",
+                                                command=self.init_secret_key_generator_screen)
+        generate_secret_key_button.pack(pady=10)
+
         low_label = ttk.Label(self, text="Wszelkie uwagi proszę zgłaszać do: Michał", font=("Helvetica", 12))
         low_label.pack(pady=20)
 
@@ -69,6 +74,11 @@ class Application(tk.Tk):
         self.clear_screen()
         self.long_path_finder = LongPathFinder(self)
         self.long_path_finder.pack(fill="both", expand=True)
+
+    def init_secret_key_generator_screen(self):
+        self.clear_screen()
+        self.secret_key_generator = SecretKeyGenerator(self)
+        self.secret_key_generator.pack(fill="both", expand=True)
 
 
 def find_duplicates(directory):
@@ -275,6 +285,61 @@ class LongPathFinder(tk.Frame):
                         subprocess.call(('xdg-open', os.path.normpath(directory)))
                 except Exception as e:
                     messagebox.showerror("Błąd", f"Nie udało się otworzyć katalogu: {e}")
+
+
+class SecretKeyGenerator(tk.Frame):
+    def __init__(self, master):
+        super().__init__(master)
+
+        self.frame = ttk.Frame(self)
+        self.frame.pack(pady=20)
+
+        self.label = ttk.Label(self.frame, text="Podaj liczbę znaków:")
+        self.label.pack(side=tk.LEFT, padx=10)
+
+        self.length_var = tk.StringVar(value="32")
+        self.entry = ttk.Entry(self.frame, textvariable=self.length_var)
+        self.entry.pack(side=tk.LEFT, padx=10)
+
+        self.generate_button = ttk.Button(self.frame, text="Wygeneruj i kopiuj", command=self.generate_secret_key)
+        self.generate_button.pack(side=tk.LEFT, padx=10)
+
+        self.back_button = ttk.Button(self.frame, text="Wstecz", command=master.init_welcome_screen)
+        self.back_button.pack(side=tk.LEFT, padx=10)
+
+        self.text_area_frame = ttk.Frame(self)
+        self.text_area_frame.pack(pady=10)
+
+        self.text_area_scroll = ttk.Scrollbar(self.text_area_frame, orient=tk.VERTICAL)
+        self.text_area_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.text_area = tk.Text(self.text_area_frame, yscrollcommand=self.text_area_scroll.set, height=30, width=100,
+                                 font=("Courier", 10))
+        self.text_area.pack()
+
+        self.text_area_scroll.config(command=self.text_area.yview)
+
+    def generate_secret_key(self):
+        try:
+            length = int(self.length_var.get())
+            if length <= 0:
+                raise ValueError("Liczba znaków musi być większa niż zero.")
+
+            alphabet = string.ascii_letters + string.digits + string.punctuation
+            secret_key = ''.join(secrets.choice(alphabet) for _ in range(length))
+            self.text_area.delete("1.0", tk.END)
+            self.text_area.insert(tk.END, secret_key)
+            self.copy_to_clipboard(secret_key)
+            messagebox.showinfo("Secret Key", "Wygenerowany klucz skopiowano do schowka.")
+        except ValueError as ve:
+            messagebox.showerror("Błąd", f"Niepoprawna wartość: {ve}")
+        except Exception as e:
+            messagebox.showerror("Błąd", f"Coś poszło nie tak: {e}")
+
+    def copy_to_clipboard(self, text):
+        self.clipboard_clear()
+        self.clipboard_append(text)
+        self.update()
 
 
 if __name__ == "__main__":
