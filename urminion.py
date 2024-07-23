@@ -58,7 +58,7 @@ class Application(tk.Tk):
                                                 command=self.init_secret_key_generator_screen)
         generate_secret_key_button.pack(pady=10)
 
-        low_label = ttk.Label(self, text="Wszelkie uwagi proszę zgłaszać do: Michał", font=("Helvetica", 12))
+        low_label = ttk.Label(self, text="Wszelkie uwagi proszę zgłaszać na: waleron@gmail.com", font=("Helvetica", 12))
         low_label.pack(pady=20)
 
     def clear_screen(self):
