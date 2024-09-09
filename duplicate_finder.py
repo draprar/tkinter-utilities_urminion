@@ -1,19 +1,36 @@
 import os
+import hashlib
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import subprocess
 
 
+def get_file_hash(file_path, hash_algorithm='sha256'):
+    try:
+        hash_func = hashlib.new(hash_algorithm)
+        with open(file_path, 'rb') as f:
+            while chunk := f.read(8192):
+                hash_func.update(chunk)
+        return hash_func.hexdigest()
+    except Exception as e:
+        print(f"Could not hash file {file_path}: {e}")
+        return None
+
+
 def find_duplicates(directory):
-    file_map = {}
+    file_hash_map = {}
     for dirpath, _, filenames in os.walk(directory):
         for filename in filenames:
-            if filename in file_map:
-                file_map[filename].append(os.path.join(dirpath, filename))
-            else:
-                file_map[filename] = [os.path.join(dirpath, filename)]
+            file_path = os.path.join(dirpath, filename)
+            file_hash = get_file_hash(file_path)
 
-    duplicates = {name: paths for name, paths in file_map.items() if len(paths) > 1}
+            if file_hash:
+                if file_hash in file_hash_map:
+                    file_hash_map[file_hash].append(file_path)
+                else:
+                    file_hash_map[file_hash] = [file_path]
+
+    duplicates = {hash_value: paths for hash_value, paths in file_hash_map.items() if len(paths) > 1}
     return duplicates
 
 
@@ -41,7 +58,7 @@ class DuplicateFinder(tk.Frame):
         self.back_button = ttk.Button(self.frame, text="Back", command=master.init_welcome_screen)
         self.back_button.pack(side=tk.LEFT, padx=10)
 
-        self.lower_label = ttk.Label(self, text="The search is done by FILE NAME. Please double-check before deletion!", wraplength=1000, justify=tk.LEFT)
+        self.lower_label = ttk.Label(self, text="The search is done by FILE CONTENT (hash comparison). Please double-check before deletion!", wraplength=1000, justify=tk.LEFT)
         self.lower_label.pack(pady=10)
 
         self.text_area_frame = ttk.Frame(self)
@@ -69,8 +86,8 @@ class DuplicateFinder(tk.Frame):
         if self.duplicates:
             self.listbox.delete(0, tk.END)
             self.listbox.insert(tk.END, "Duplicate files:\n")
-            for name, paths in self.duplicates.items():
-                self.listbox.insert(tk.END, f"\n{name}:\n")
+            for file_hash, paths in self.duplicates.items():
+                self.listbox.insert(tk.END, f"\nHash: {file_hash}\n")
                 for path in paths:
                     self.listbox.insert(tk.END, path)
         else:
