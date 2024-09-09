@@ -9,6 +9,9 @@ class LongPathFinder(tk.Frame):
         super().__init__(master)
 
         self.path_map = None
+        self.default_long_path_length = 260
+        self.long_path_length = self.default_long_path_length
+
         self.frame = ttk.Frame(self)
         self.frame.pack(pady=20)
 
@@ -24,10 +27,12 @@ class LongPathFinder(tk.Frame):
         self.back_button = ttk.Button(self.frame, text="Back", command=master.init_welcome_screen)
         self.back_button.pack(side=tk.LEFT, padx=10)
 
-        self.lower_label = ttk.Label(self,
-                                     text="If the path is too long (>260), you may need to navigate further in the File Explorer.",
-                                     wraplength=1000, justify=tk.LEFT)
-        self.lower_label.pack(pady=10)
+        self.length_label = ttk.Label(self.frame, text='Set long path length (default: 260)', wraplength=1000, justify=tk.LEFT)
+        self.length_label.pack(padx=10)
+
+        self.length_entry = ttk.Entry(self.frame)
+        self.length_entry.insert(0, str(self.default_long_path_length))
+        self.length_entry.pack(side=tk.LEFT, padx=10)
 
         self.text_area_frame = ttk.Frame(self)
         self.text_area_frame.pack(pady=10)
@@ -54,6 +59,12 @@ class LongPathFinder(tk.Frame):
             messagebox.showwarning("No Directory", "Please select a directory first.")
             return
 
+        try:
+            self.long_path_length = int(self.length_entry.get())
+        except ValueError:
+            messagebox.showwarning("Invalid input", f"Please enter a valid number for the long path length.")
+            return
+
         self.listbox.delete(0, tk.END)
         self.long_paths = []
         seen_paths = set()
@@ -62,7 +73,7 @@ class LongPathFinder(tk.Frame):
         for root, dirs, files in os.walk(self.directory):
             for name in dirs + files:
                 full_path = os.path.join(root, name)
-                if len(full_path) > 260:
+                if len(full_path) > self.long_path_length:
                     if not any(full_path.startswith(p) for p in seen_paths):
                         seen_paths.add(full_path)
                         display_entry = f"Length: {len(full_path)} - {full_path}"
