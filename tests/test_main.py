@@ -16,12 +16,15 @@ class TestMain:
         """
         mock_tk = MagicMock()
         mocker.patch('tkinter.Tk', return_value=mock_tk)
+
+        mocker.patch.object(Application, 'title', return_value=None)
+        mocker.patch.object(Application, 'geometry', return_value=None)
+
         return Application()
 
     def test_app_initialization(self, app):
         """
         Test Application initialization with correct title and dimensions.
         """
-        assert app.title() == 'UrMinion'
-        assert app.winfo_width() == 1024
-        assert app.winfo_height() == 768
+        app.title.assert_called_once_with("UrMinion")
+        app.geometry.assert_called_once_with("1024x768")
