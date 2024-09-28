@@ -31,6 +31,7 @@ jobs:
 
       - name: Run tests with pytest
         run: |
-          mkdir -p ./test-reports
+          export DISPLAY=:99
+          Xvfb :99 &
           pytest --disable-warnings
           
