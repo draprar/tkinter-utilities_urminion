@@ -26,6 +26,9 @@ jobs:
           python.exe -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install xvfb
+        run: sudo apt-get install -y xvfb
+
       - name: Run tests with pytest
         run: |
           mkdir -p ./test-reports

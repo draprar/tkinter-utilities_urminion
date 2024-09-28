@@ -19,6 +19,7 @@ class TestMain:
 
         mocker.patch.object(Application, 'title', return_value=None)
         mocker.patch.object(Application, 'geometry', return_value=None)
+        mocker.patch.object(Application, 'iconbitmap', return_value=None)
 
         return Application()
 
