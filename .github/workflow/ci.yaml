@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,17 +23,13 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python.exe -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install pytest
+          python -m pip install .
 
-      - name: Install xvfb
-        run: |
-          sudo apt-get install -y xvfb
-          xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' mainpy.py
-
-      - name: Run tests with pytest
+      - name: Test with pytest
         run: |
           export DISPLAY=:99
           Xvfb :99 &
-          pytest --disable-warnings
+          python -m pytest tests/
           
