@@ -23,13 +23,17 @@ jobs:
 
       - name: Install dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb  # Install Xvfb for virtual display
           python -m pip install --upgrade pip
-          python -m pip install pytest
-          python -m pip install .
+          python -m pip install pytest pytest-mock  # Install pytest-mock for mocker fixture
+          python -m pip install .  # Install your package
+
+      - name: Run Xvfb
+        run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x16 &  # Start Xvfb with proper settings
 
       - name: Test with pytest
         run: |
-          export DISPLAY=:99
-          Xvfb :99 &
           python -m pytest tests/
-          
