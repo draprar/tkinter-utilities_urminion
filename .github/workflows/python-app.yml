@@ -26,13 +26,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb  # Install Xvfb for virtual display
           python -m pip install --upgrade pip
-          python -m pip install pytest pytest-mock  # Install pytest-mock for mocker fixture
-          python -m pip install .  # Install your package
+          python -m pip install pytest pytest-mock  # Install pytest and mock library
 
       - name: Run Xvfb
         run: |
           export DISPLAY=:99
-          Xvfb :99 -screen 0 1024x768x16 &  # Start Xvfb with proper settings
+          Xvfb :99 -screen 0 1024x768x16 &  # Start Xvfb virtual display
 
       - name: Test with pytest
         run: |
