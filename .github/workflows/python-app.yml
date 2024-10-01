@@ -33,6 +33,7 @@ jobs:
           export DISPLAY=:99
           Xvfb :99 -screen 0 1024x768x16 &  # Start Xvfb virtual display
 
-      - name: Test with pytest
+      - name: Run tests with pytest
         run: |
+          export DISPLAY=:99  # Set DISPLAY to the virtual display
           python -m pytest tests/
