@@ -30,10 +30,12 @@ jobs:
 
       - name: Run Xvfb
         run: |
-          export DISPLAY=:99
-          Xvfb :99 -screen 0 1024x768x16
+          Xvfb :99 -screen 0 1024x768x16 & # Start Xvfb
+          sleep 5 # Set some time to start
+          export DISPLAY=:99 # Set DISPLAY variable
+          echo "Xvfb started on display $DISPLAY" # Logger
 
       - name: Run tests with pytest
         run: |
           export DISPLAY=:99
-          python -m pytest tests/
+          python -m pytest tests/ --maxfail=1 --timeout=600 # Set max fail to 1 and timeout to 10 mins
