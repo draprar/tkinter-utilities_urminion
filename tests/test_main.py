@@ -3,7 +3,7 @@ import sys
 import os
 import tkinter as tk
 from unittest.mock import patch, MagicMock
-from main import ascii_art
+from main import ascii_art, DuplicateFinder, LongPathFinder, SecretKeyGenerator
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from main import Application
@@ -84,3 +84,63 @@ class TestMain:
         # Check that all expected buttons were created
         for expected in expected_button_texts:
             assert expected in button_texts, f"Button with text '{expected}' not found."
+
+    def test_init_find_duplicates_screen(self, app, mocker):
+        """
+         Test that DuplicateFinder is initialized correctly.
+        """
+        # Mock the clear_screen function
+        mock_clear_screen = mocker.patch('main.clear_screen')
+
+        # Mock DuplicateFinder
+        mock_duplicate_finder = mocker.patch('main.DuplicateFinder', autospec=True)
+
+        # Run the init_find_duplicates_screen method
+        app.init_find_duplicates_screen()
+
+        # Assert the screen was cleared first
+        mock_clear_screen.assert_called_once_with(app)
+
+        # Check that DuplicateFinder was initialized and packed correctly
+        mock_duplicate_finder.assert_called_once_with(app)
+        mock_duplicate_finder.return_value.pack.assert_called_once_with(fill="both", expand=True)
+
+    def test_init_find_long_paths_screen(self, app, mocker):
+        """
+         Test that LongPathFinder is initialized correctly.
+        """
+        # Mock the clear_screen function
+        mock_clear_screen = mocker.patch('main.clear_screen')
+
+        # Mock LongPathFinder
+        mock_long_paths_finder = mocker.patch('main.LongPathFinder', autospec=True)
+
+        # Run the init_find_long_paths_screen
+        app.init_find_long_paths_screen()
+
+        # Assert the screen was cleared first
+        mock_clear_screen.assert_called_once_with(app)
+
+        # Check that LongPathFinder was initialized and packed correctly
+        mock_long_paths_finder.assert_called_once_with(app)
+        mock_long_paths_finder.return_value.pack.assert_called_once_with(fill="both", expand=True)
+
+    def test_init_secret_key_generator_screen(self, app, mocker):
+        """
+         Test that SecretKeyGenerator is initialized correctly.
+        """
+        # Mock the clear_screen function
+        mock_clear_screen = mocker.patch('main.clear_screen')
+
+        # Mock SecretKeyGenerator
+        mock_secret_key_generator = mocker.patch('main.SecretKeyGenerator', autospec=True)
+
+        # Run the init_secret_key_generator_screen
+        app.init_secret_key_generator_screen()
+
+        # Assert the screen was cleared first
+        mock_clear_screen.assert_called_once_with(app)
+
+        # Check that LongPathFinder was initialized and packed correctly
+        mock_secret_key_generator.assert_called_once_with(app)
+        mock_secret_key_generator.return_value.pack.assert_called_once_with(fill="both", expand=True)
