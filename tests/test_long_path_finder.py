@@ -54,9 +54,24 @@ class TestLongPathFinder:
         ]
         assert long_paths == expected_long_paths
 
-    @patch("long_path_finder.subprocess.call")
+    @pytest.mark.skipif(sys.platform != "win32", reason="os.startfile is only available on Windows")
     @patch("long_path_finder.os.startfile")
-    def test_open_end_of_path(self, mock_startfile, mock_subprocess_call, app):
+    def test_open_end_of_path_windows(self, mock_startfile, app):
+        # Prepare the test data and add it to listbox
+        test_entry = "Length: 260 - /mocked/path/to/file.txt"
+        app.path_map[test_entry] = "/mocked/path/to/file.txt"
+        app.listbox.insert(tk.END, test_entry)
+        app.listbox.selection_set(0)
+
+        # Call the method under test
+        app.open_end_of_path()
+
+        expected_path = os.path.normpath("/mocked/path/to")
+        mock_startfile.assert_called_once_with(expected_path)
+
+    @pytest.mark.skipif(sys.platform == "win32", reason="subprocess.call is used on non-Windows platforms")
+    @patch("long_path_finder.subprocess.call")
+    def test_open_end_of_path_non_windows(self, mock_subprocess_call, app):
         # Prepare the test data and add it to listbox
         test_entry = "Length: 260 - /mocked/path/to/file.txt"
         app.path_map[test_entry] = "/mocked/path/to/file.txt"
@@ -68,13 +83,7 @@ class TestLongPathFinder:
 
         expected_path = os.path.normpath("/mocked/path/to")
 
-        # Check platform-specific behavior
-        if sys.platform == "win32":
-            mock_startfile.assert_called_once_with(expected_path)
-            mock_subprocess_call.assert_not_called()  # subprocess.call shouldn't be used on Windows
+        if sys.platform == "darwin":
+            mock_subprocess_call.assert_called_once_with(["open", expected_path])
         else:
-            mock_startfile.assert_not_called()  # os.startfile shouldn't be used on non-Windows
-            if sys.platform == "darwin":
-                mock_subprocess_call.assert_called_once_with(["open", expected_path])
-            else:
-                mock_subprocess_call.assert_called_once_with(["xdg-open", expected_path])
+            mock_subprocess_call.assert_called_once_with(["xdg-open", expected_path])
