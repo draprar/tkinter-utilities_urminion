@@ -83,7 +83,4 @@ class TestLongPathFinder:
 
         expected_path = os.path.normpath("/mocked/path/to")
 
-        if sys.platform == "darwin":
-            mock_subprocess_call.assert_called_once_with(["open", expected_path])
-        else:
-            mock_subprocess_call.assert_called_once_with(["xdg-open", expected_path])
+        mock_subprocess_call.assert_called_once_with(["xdg-open", expected_path])
