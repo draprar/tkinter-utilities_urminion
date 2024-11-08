@@ -1,5 +1,6 @@
 import os
 import pytest
+import sys
 import tkinter as tk
 from tkinter import filedialog
 from unittest.mock import Mock, patch
@@ -15,6 +16,7 @@ def app():
     long_path_finder.path_map = {}  # ensure path_map is initialized
     long_path_finder.default_long_path_length = 260
     long_path_finder.long_path_length = long_path_finder.default_long_path_length
+    long_path_finder.listbox = tk.Listbox(root)
     return long_path_finder
 
 
@@ -52,17 +54,27 @@ class TestLongPathFinder:
         ]
         assert long_paths == expected_long_paths
 
+    @patch("long_path_finder.subprocess.call")
     @patch("long_path_finder.os.startfile")
-    def test_open_end_of_path(self, mock_startfile, app):
-        # Simulate adding an entry to listbox and selecting it
+    def test_open_end_of_path(self, mock_startfile, mock_subprocess_call, app):
+        # Prepare the test data and add it to listbox
         test_entry = "Length: 260 - /mocked/path/to/file.txt"
         app.path_map[test_entry] = "/mocked/path/to/file.txt"
         app.listbox.insert(tk.END, test_entry)
         app.listbox.selection_set(0)
 
-        # Invoke the method
+        # Call the method under test
         app.open_end_of_path()
 
-        # Normalize the path for cross-platform compatibility
         expected_path = os.path.normpath("/mocked/path/to")
-        mock_startfile.assert_called_once_with(expected_path)
+
+        # Check platform-specific behavior
+        if sys.platform == "win32":
+            mock_startfile.assert_called_once_with(expected_path)
+            mock_subprocess_call.assert_not_called()  # subprocess.call shouldn't be used on Windows
+        else:
+            mock_startfile.assert_not_called()  # os.startfile shouldn't be used on non-Windows
+            if sys.platform == "darwin":
+                mock_subprocess_call.assert_called_once_with(["open", expected_path])
+            else:
+                mock_subprocess_call.assert_called_once_with(["xdg-open", expected_path])
