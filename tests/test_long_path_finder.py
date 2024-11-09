@@ -83,4 +83,4 @@ class TestLongPathFinder:
 
         expected_path = os.path.normpath("/mocked/path/to")
 
-        mock_subprocess_call.assert_called_once_with(["open", expected_path])
+        mock_subprocess_call.assert_called_once_with(("open", expected_path))
